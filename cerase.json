@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "namespace": "studio.guidance",
+  "name": "cerase-search",
+  "type": "connector",
+  "display_name": "Cerase Search",
+  "description": "Search up-to-date information on the web.",
+  "license": "MIT",
+  "install": {
+    "image": "ghcr.io/cerase-ai/cerase-search-mcp:latest"
+  },
+  "auth": {
+    "kind": "none",
+    "credential_scope": "tenant"
+  }
+}

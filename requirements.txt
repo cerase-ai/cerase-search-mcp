@@ -1,0 +1,8 @@
+# cerase-search MCP — Python dependency lock (OPT-15 / TOOLS-2).
+#
+# FastMCP stdio server bridged to HTTP/SSE by mcp-proxy, same shape as
+# cerase-memory / cerase-deck-renderer. Calls cerase-litellm via the
+# OpenAI-compatible client. Update + rebuild the image to bump.
+mcp>=1.0,<2.0
+mcp-proxy>=0.3,<1.0
+openai>=1.40,<2.0
