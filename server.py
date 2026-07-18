@@ -31,10 +31,19 @@ Env vars (set by docker-compose / mcp-runner):
 """
 from __future__ import annotations
 
+import logging
 import os
+import sys
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+
+# MCP stdio transport uses stdout as the JSON-RPC channel — any log on stdout
+# corrupts the protocol. Own the stderr invariant explicitly (don't depend on
+# the mcp SDK's default handler, which could change across versions) and quiet
+# httpx so backend request URLs don't leak into the logs.
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 mcp = FastMCP("cerase-search")
 
@@ -63,6 +72,63 @@ def _client():
     )
 
 
+def _to_dict(obj: Any) -> Any:
+    """Best-effort convert a pydantic response part (openai/litellm) to a plain
+    dict; pass dicts through untouched."""
+    return obj.model_dump() if hasattr(obj, "model_dump") else obj
+
+
+def _extract_sources(resp: Any) -> list[dict[str, Any]]:
+    """Followable web sources behind the answer's inline [n] markers, index-aligned
+    so sources[n-1]['index'] == n. Backend-shape-defensive: OpenRouter exposes them
+    on choices[0].message.annotations[].url_citation; Perplexity-via-litellm may
+    instead expose a top-level `citations` (URL strings) or `search_results` (dicts).
+    Returns [] when the backend gave none — never fabricated.
+    """
+    # 1) OpenRouter annotations form.
+    try:
+        msg = resp.choices[0].message if resp.choices else None
+    except Exception:
+        msg = None
+    annotations = list(getattr(msg, "annotations", None) or []) if msg is not None else []
+    if annotations:
+        out: list[dict[str, Any]] = []
+        for i, entry in enumerate(annotations):
+            entry = _to_dict(entry)
+            uc = (entry.get("url_citation") or {}) if isinstance(entry, dict) else {}
+            if uc.get("url"):
+                out.append({"index": i + 1, "url": uc["url"], "title": uc.get("title") or None})
+        if out:
+            return out
+
+    extra = getattr(resp, "model_extra", None) or {}
+
+    # 2) Perplexity-native top-level `citations` (via litellm): URL strings or dicts.
+    citations = getattr(resp, "citations", None) or extra.get("citations")
+    if citations:
+        out = []
+        for i, c in enumerate(citations):
+            if isinstance(c, str) and c:
+                out.append({"index": i + 1, "url": c, "title": None})
+            elif isinstance(c, dict) and c.get("url"):
+                out.append({"index": i + 1, "url": c["url"], "title": c.get("title") or None})
+        if out:
+            return out
+
+    # 3) Newer Perplexity top-level `search_results`.
+    results = getattr(resp, "search_results", None) or extra.get("search_results")
+    if results:
+        out = []
+        for i, s in enumerate(results):
+            s = _to_dict(s)
+            if isinstance(s, dict) and s.get("url"):
+                out.append({"index": i + 1, "url": s["url"], "title": s.get("title") or None})
+        if out:
+            return out
+
+    return []
+
+
 def _run_search(alias: str, agent_id: str, query: str) -> dict[str, Any]:
     if not agent_id:
         raise ValueError("agent_id is required (cannot be empty)")
@@ -82,7 +148,7 @@ def _run_search(alias: str, agent_id: str, query: str) -> dict[str, Any]:
         extra_body={"metadata": {"cerase_agent_id": agent_id}},
     )
     answer = resp.choices[0].message.content if resp.choices else ""
-    return {"answer": answer or "", "model": alias}
+    return {"answer": answer or "", "model": alias, "sources": _extract_sources(resp)}
 
 
 @mcp.tool()
@@ -99,7 +165,9 @@ def search(agent_id: str, query: str) -> dict[str, Any]:
         query: natural-language search query.
 
     Returns:
-        dict with `answer` (sourced text) and `model`.
+        dict with `answer` (sourced text), `model`, and `sources` — a list of
+        {index, url, title} for the URLs behind the answer's inline [n] markers
+        (empty if the backend returned none).
     """
     return _run_search(_SEARCH_ALIAS, agent_id, query)
 
@@ -117,7 +185,9 @@ def deepsearch(agent_id: str, query: str) -> dict[str, Any]:
         query: natural-language research query.
 
     Returns:
-        dict with `answer` (sourced text) and `model`.
+        dict with `answer` (sourced text), `model`, and `sources` — a list of
+        {index, url, title} for the URLs behind the answer's inline [n] markers
+        (empty if the backend returned none).
     """
     return _run_search(_DEEPSEARCH_ALIAS, agent_id, query)
 
