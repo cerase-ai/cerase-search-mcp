@@ -80,12 +80,12 @@ def _to_dict(obj: Any) -> Any:
 
 def _extract_sources(resp: Any) -> list[dict[str, Any]]:
     """Followable web sources behind the answer's inline [n] markers, index-aligned
-    so sources[n-1]['index'] == n. Backend-shape-defensive: OpenRouter exposes them
-    on choices[0].message.annotations[].url_citation; Perplexity-via-litellm may
-    instead expose a top-level `citations` (URL strings) or `search_results` (dicts).
-    Returns [] when the backend gave none — never fabricated.
+    so sources[n-1]['index'] == n. Backend-shape-defensive: some search backends put
+    them on choices[0].message.annotations[].url_citation; others expose a top-level
+    `citations` (URL strings) or `search_results` (dicts). Returns [] when the backend
+    gave none — never fabricated.
     """
-    # 1) OpenRouter annotations form.
+    # 1) Annotations form: choices[0].message.annotations[].url_citation.
     try:
         msg = resp.choices[0].message if resp.choices else None
     except Exception:
@@ -103,7 +103,7 @@ def _extract_sources(resp: Any) -> list[dict[str, Any]]:
 
     extra = getattr(resp, "model_extra", None) or {}
 
-    # 2) Perplexity-native top-level `citations` (via litellm): URL strings or dicts.
+    # 2) Top-level `citations` (URL strings or dicts).
     citations = getattr(resp, "citations", None) or extra.get("citations")
     if citations:
         out = []
@@ -115,7 +115,7 @@ def _extract_sources(resp: Any) -> list[dict[str, Any]]:
         if out:
             return out
 
-    # 3) Newer Perplexity top-level `search_results`.
+    # 3) Top-level `search_results` (list of dicts).
     results = getattr(resp, "search_results", None) or extra.get("search_results")
     if results:
         out = []
