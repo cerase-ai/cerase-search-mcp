@@ -18,8 +18,7 @@ attributes the spend per-agent.
 ## Billing
 
 A search costs **both**:
-- the **token** charge at the tool-model multiplier (×3 search / ×15
-  deepsearch) via the SpendLogs stream, and
+- the **token** charge for the tool model, via the SpendLogs stream, and
 - a **flat fee** `web_search_cr` (20 cr) via the gateway's `event_log`
   `mcp_call` row (`tool_name` ∈ `billable_search_tools`).
 
