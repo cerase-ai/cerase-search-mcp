@@ -35,7 +35,7 @@ Source of truth: `control-plane/config/cerase.php → credit_pricing`.
 
 ## Run shape
 
-`mcp-proxy --port 3000 -- python /app/server.py` (FastMCP stdio →
+`mcp-proxy --port 3000 -- python /app/server.py` (MCPServer stdio →
 HTTP/SSE), identical to the other `cerase-*` MCP images. GHCR image
 `ghcr.io/cerase-ai/cerase-search-mcp:<tag>` built by
 `.github/workflows/docker-publish.yml`.

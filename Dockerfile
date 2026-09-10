@@ -6,7 +6,7 @@
 # cerase-litellm with the `search` / `deepsearch` tool-model alias and
 # injects metadata.cerase_agent_id for per-agent billing.
 #
-# FastMCP stdio server bridged to HTTP/SSE by mcp-proxy — same shape as
+# MCPServer stdio server bridged to HTTP/SSE by mcp-proxy — same shape as
 # cerase-memory / cerase-deck-renderer.
 FROM python:3.13.9-slim@sha256:326df678c20c78d465db501563f3492d17c42a4afe33a1f2bf5406a1d56b0e86
 
