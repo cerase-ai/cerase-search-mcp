@@ -6,11 +6,17 @@
 # cerase-litellm with the `search` / `deepsearch` tool-model alias and
 # injects metadata.cerase_agent_id for per-agent billing.
 #
-# MCPServer stdio server bridged to HTTP/SSE by mcp-proxy — same shape as
+# FastMCP stdio server bridged to HTTP/SSE by mcp-proxy — same shape as
 # cerase-memory / cerase-deck-renderer.
-FROM python:3.13.9-slim@sha256:326df678c20c78d465db501563f3492d17c42a4afe33a1f2bf5406a1d56b0e86
+FROM python:3.13.9-slim@sha256:326df678c20c78d465db501563f3492d17c42a4afe33a1f2bf5406a1d56b0e86 AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# The digest-pinned base lags Debian's security feed, so this stage applies the
+# published security upgrades before installing anything. The publish job's
+# blocking image scan holds the image to that, and it can only do so because its
+# scan build rebuilds the stage named `runtime` without the layer cache: a cached
+# apt layer keeps the packages of whichever day it was first built.
+RUN apt-get update && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 

@@ -36,7 +36,7 @@ import os
 import sys
 from typing import Any
 
-from mcp.server.mcpserver import MCPServer
+from mcp.server.fastmcp import FastMCP
 
 # MCP stdio transport uses stdout as the JSON-RPC channel — any log on stdout
 # corrupts the protocol. Own the stderr invariant explicitly (don't depend on
@@ -45,7 +45,7 @@ from mcp.server.mcpserver import MCPServer
 logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-mcp = MCPServer("cerase-search")
+mcp = FastMCP("cerase-search")
 
 _SEARCH_ALIAS = os.environ.get("CERASE_SEARCH_ALIAS", "search")
 _DEEPSEARCH_ALIAS = os.environ.get("CERASE_DEEPSEARCH_ALIAS", "deepsearch")
