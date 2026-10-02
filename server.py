@@ -155,39 +155,30 @@ def _run_search(alias: str, agent_id: str, query: str) -> dict[str, Any]:
 def search(agent_id: str, query: str) -> dict[str, Any]:
     """Search the live web and return a concise, sourced answer.
 
-    Use for everyday "what's the latest on…", "find…", "look up…"
-    requests where current information beyond the model's training is
-    needed.
+    Use for everyday "what's the latest on…", "find…", "look up…" requests where current information beyond the model's training is needed.
 
     Args:
-        agent_id: Cerase Agent PK — bound by the gateway. Must NOT be
-            empty.
+        agent_id: Cerase Agent PK — bound by the gateway. Must NOT be empty.
         query: natural-language search query.
 
     Returns:
-        dict with `answer` (sourced text), `model`, and `sources` — a list of
-        {index, url, title} for the URLs behind the answer's inline [n] markers
-        (empty if the backend returned none).
+        dict with `answer` (sourced text), `model`, and `sources` — a list of {index, url, title} for the URLs behind the answer's inline [n] markers (empty if the backend returned none).
     """
     return _run_search(_SEARCH_ALIAS, agent_id, query)
 
 
 @mcp.tool()
 def deepsearch(agent_id: str, query: str) -> dict[str, Any]:
-    """Run a deeper, multi-step web search (advanced search) for harder
-    research questions that need broader source coverage.
+    """Run a deeper, multi-step web search (advanced search) for harder research questions that need broader source coverage.
 
-    Costs more credits than `search` — prefer `search` unless the
-    question genuinely needs deep research.
+    Costs more credits than `search` — prefer `search` unless the question genuinely needs deep research.
 
     Args:
         agent_id: Cerase Agent PK — bound by the gateway.
         query: natural-language research query.
 
     Returns:
-        dict with `answer` (sourced text), `model`, and `sources` — a list of
-        {index, url, title} for the URLs behind the answer's inline [n] markers
-        (empty if the backend returned none).
+        dict with `answer` (sourced text), `model`, and `sources` — a list of {index, url, title} for the URLs behind the answer's inline [n] markers (empty if the backend returned none).
     """
     return _run_search(_DEEPSEARCH_ALIAS, agent_id, query)
 
