@@ -5,6 +5,7 @@ annotated-types==0.7.0
 anyio==4.15.1
     # via
     #   httpx
+    #   httpx2
     #   mcp
     #   openai
     #   sse-starlette
@@ -22,33 +23,36 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy'
 click==8.4.1
     # via uvicorn
 colorama==0.4.6 ; sys_platform == 'win32'
-    # via
-    #   click
-    #   tqdm
+    # via click
 cryptography==50.0.1
     # via pyjwt
-distro==1.9.0
-    # via openai
 h11==0.16.0
     # via
     #   httpcore
+    #   httpcore2
     #   uvicorn
 httpcore==1.0.9
     # via httpx
+httpcore2==2.13.1 ; sys_platform != 'emscripten'
+    # via httpx2
 httpx==0.28.1
     # via
     #   httpx-auth
     #   mcp
-    #   openai
 httpx-auth==0.23.1
     # via mcp-proxy
 httpx-sse==0.4.3
     # via mcp
+httpx2==2.13.1
+    # via openai
+httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
+    # via httpx2
 idna==3.18
     # via
     #   anyio
     #   httpx
-jiter==0.15.0
+    #   httpx2
+jiter==0.17.0
     # via openai
 jsonschema==4.26.0
     # via mcp
@@ -60,7 +64,7 @@ mcp==1.30.0
     #   mcp-proxy
 mcp-proxy==0.12.0
     # via -r requirements.txt
-openai==1.109.1
+openai==3.26.0
     # via -r requirements.txt
 pycparser==3.0 ; implementation_name != 'PyPy' and platform_python_implementation != 'PyPy'
     # via cffi
@@ -97,8 +101,10 @@ starlette==1.6.0
     # via
     #   mcp
     #   sse-starlette
-tqdm==4.68.2
-    # via openai
+truststore==0.10.4 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
 typing-extensions==4.16.0
     # via
     #   anyio
